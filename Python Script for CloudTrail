@@ -1,0 +1,102 @@
+import csv
+
+from urllib import response
+
+import boto3
+
+account = "…."
+
+region = "us-east-2"
+
+boto3.setup_default_session(profile_name=account, region_name=region)
+
+cloudtrail = boto3.client('cloudtrail')
+
+client = boto3.client('cloudtrail')
+
+paginator = client.get_paginator('lookup_events')
+
+instance_id = 'i-….'
+
+starttime = '2022-05-26 02:30:00'
+
+endtime = '2022-05-27 05:00:00'
+
+try:
+
+    # response = cloudtrail.lookup_events('lookup_events')
+
+    page_iterator = paginator.paginate(
+
+        LookupAttributes=[
+
+            {
+
+                'AttributeKey': 'ResourceName',
+
+                'AttributeValue': instance_id
+
+ 
+
+            },
+
+        ],
+
+        StartTime=starttime,
+
+        EndTime=endtime,
+
+    PaginationConfig={
+
+        'MaxItems': 123,
+
+        'PageSize': 123,
+
+        'NextToken': 'string'
+
+    }
+
+    )
+
+    # print(response)
+
+    # with open("cloudtrail_log1.csv", "w") as csv_file:
+
+    with open("cloudtrail_log_" + str(account) +"_" + str(instance_id) + ".csv", "w") as csv_file:   
+
+    # starts the csv file
+
+        writer = csv.writer(csv_file)
+
+        # header
+
+        # writer.writerow(['EventId','EventTime','Event_name','EventSource','resource_Type',])
+
+        writer.writerow(['EventId','EventTime','Event_name','Username','EventSource','resource_Type',])
+
+        # for event in response['Events']:
+
+    # for page in response_iterator:
+
+        for page in page_iterator:
+
+            for event in page['Events']:
+
+                try:
+
+                    if event['Username'] is not None:
+
+                       writer.writerow([event['EventId'],event['EventTime'],event['EventName'],event['Username'],event['EventSource'],event['Resources'][0]])
+
+                except Exception as e:
+
+                    writer.writerow([event['EventId'],event['EventTime'],event['EventName'],'-',event['EventSource'],event['Resources'][0]])
+
+ 
+ except Exception as e:
+
+    print(e)
+
+    raise(e)
+
+csv_file.close ()
